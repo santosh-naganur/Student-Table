@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import StudentForm from './components/StudentForm'
 import StudentTable from './components/StudentTable'
-import * as XLSX from 'xlsx'
+import writeXlsxFile from 'write-excel-file/browser'
 
 const initialStudents = [
   { id: 1, name: 'Alice Johnson', email: 'alice@example.com', age: 21 },
@@ -21,12 +21,13 @@ function App() {
     setStudents((prev) => prev.filter((s) => s.id !== id))
   }
 
-  const downloadExcel = () => {
-    const data = students.map(({ name, email, age }) => ({ Name: name, Email: email, Age: age }))
-    const worksheet = XLSX.utils.json_to_sheet(data)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Students')
-    XLSX.writeFile(workbook, 'students.xlsx')
+  const downloadExcel = async () => {
+    const schema = [
+      { column: 'Name',  type: String, value: (s) => s.name  },
+      { column: 'Email', type: String, value: (s) => s.email },
+      { column: 'Age',   type: Number, value: (s) => s.age   },
+    ]
+    await writeXlsxFile(students, { schema, fileName: 'students.xlsx' })
   }
 
   return (
